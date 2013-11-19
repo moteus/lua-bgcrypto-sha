@@ -1,0 +1,39 @@
+PROJECT = 'bgcrypto'
+
+INITLAKEFILE()
+
+DEFINES = L{DEFINES, IF(WINDOWS, 'DLL_EXPORT', '')}
+
+
+local SHA = {}
+for _, name in ipairs{'sha','sha1','sha224','sha256','sha384','sha512'} do
+  local sha = c.shared{name,
+    base     = 'src',
+    src      = {'sha/*.c', 'l52util.c', 'l' .. name .. '.c'},
+    needs    = {LUA_NEED},
+    incdir   = {'sha'},
+    defines  = DEFINES,
+    dynamic  = DYNAMIC,
+    strip    = true,
+  }
+  table.insert(SHA, sha)
+end
+
+target('build', SHA)
+
+
+local INSTALL_LIST = {
+  file.group{odir = TESTDIR; src = J('test', '*')};
+}
+for _, sha in ipairs(SHA) do
+  table.insert(INSTALL_LIST, 
+    (file.group{odir = J(LIBDIR, 'bgcrypto'); src = sha })
+  )
+end
+install = target('install', INSTALL_LIST)
+
+target('test', install, function()
+  run_test('test_sha.lua')
+end)
+
+default('build')
