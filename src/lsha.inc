@@ -398,6 +398,10 @@ INT_RETURN CAT2(luaopen_bgcrypto_sha, L_SHA_MODE) (lua_State*L){
   luaL_setfuncs(L, HMAC_NAME(l_hmac,lib), 0);
   lua_setfield(L, -2, "hmac");
 
+  lua_pushnumber(L, SHA_NAME(SHA,DIGEST_SIZE)); lua_setfield(L, -2, "DIGEST_SIZE");
+
+  lua_pushnumber(L, SHA_NAME(SHA,BLOCK_SIZE)); lua_setfield(L, -2,  "BLOCK_SIZE");
+
   assert(lua_gettop(L) == (top+1));
   return 1;
 }
