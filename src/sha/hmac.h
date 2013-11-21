@@ -32,8 +32,8 @@
  This is an implementation of HMAC, the FIPS standard keyed hash function
 */
 
-// #ifndef _HMAC_H
-// #define _HMAC_H
+#ifndef _HMAC_H
+#define _HMAC_H
 
 #include <memory.h>
 #include "brg_types.h"
@@ -103,4 +103,4 @@ VOID_RETURN hmac_sha(const unsigned char key[], unsigned long key_len,
 }
 #endif
 
-// #endif
+#endif

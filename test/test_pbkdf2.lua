@@ -55,7 +55,8 @@ local function test_derive_key_rfc0670()
         0x65, 0xa4, 0x29, 0xc1
       }
     },
-    --[[ { P = "password", S = "salt", c = 16777216, len = 20, hash = sha1,
+    --[[ Very slow
+    { P = "password", S = "salt", c = 16777216, len = 20, hash = sha1,
       DK = H{
         0xee, 0xfe, 0x3d, 0x61, 0xcd, 0x4d, 0xa4, 0xe4,
         0xe9, 0x94, 0x5b, 0x3d, 0x6b, 0xa2, 0x15, 0x8c,
@@ -102,7 +103,8 @@ local function test_derive_key_rfc0670()
         0xa4, 0x96, 0x38, 0x73, 0xaa, 0x98, 0x13, 0x4a,
       }
     },
-    --[[ { P = "password", S = "salt", c = 16777216, len = 32, hash = sha256,
+    --[[ Very slow
+    { P = "password", S = "salt", c = 16777216, len = 32, hash = sha256,
       DK = H{
         0xcf, 0x81, 0xc6, 0x6f, 0xe8, 0xcf, 0xc0, 0x4d,
         0x1f, 0x31, 0xec, 0xb6, 0x5d, 0xab, 0x40, 0x89,
@@ -129,6 +131,9 @@ local function test_derive_key_rfc0670()
 
   for _, test in ipairs(TESTS) do
     local key = derive_key(test.hash, test.P, test.S, test.c, test.len)
+    assert(test.DK == key)
+
+    local key = test.hash.pbkdf2(test.P, test.S, test.c, test.len)
     assert(test.DK == key)
   end
 

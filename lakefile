@@ -10,7 +10,7 @@ for _, name in ipairs{'sha','sha1','sha224','sha256','sha384','sha512'} do
   local sha = c.shared{name,
     base     = 'src',
     src      = {'sha/*.c', 'l52util.c', 'l' .. name .. '.c'},
-    exclude  = {'sha/hmac.c'},
+    exclude  = {'sha/hmac.c','sha/pwd2key.c'},
     needs    = {LUA_NEED},
     incdir   = {'sha'},
     defines  = DEFINES,

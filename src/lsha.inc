@@ -209,6 +209,7 @@ static const struct luaL_Reg SHA_NAME(l_sha, meth)[] = {
 #define hmac_sha_data   CAT4(hmac, _sha, L_SHA_MODE, _data )
 #define hmac_sha_end    CAT4(hmac, _sha, L_SHA_MODE, _end  )
 #define hmac_sha        CAT4(hmac, _sha, L_SHA_MODE, _hash )
+#define derive_key      CAT3(pbkdf2, _sha, L_SHA_MODE)
 
 //{ HMAC.c
 
@@ -220,6 +221,10 @@ static const struct luaL_Reg SHA_NAME(l_sha, meth)[] = {
 #define sha_end             SHA_NAME(sha, end)
 
 #include "hmac.c"
+#include "pwd2key.c"
+
+#undef _HMAC_H
+#undef PWD2KEY_H
 
 #undef HASH_INPUT_SIZE
 #undef HASH_OUTPUT_SIZE
@@ -374,9 +379,42 @@ static const struct luaL_Reg HMAC_NAME(l_hmac, meth)[] = {
 
 //}
 
+//{ PBKDF2
+
+static int SHA_NAME(l_sha, pbkdf2)(lua_State *L){
+  unsigned char buffer[512];
+
+  size_t pwd_len;  const unsigned char *pwd  = (unsigned char *)luaL_checklstring(L, 1, &pwd_len );
+  size_t salt_len; const unsigned char *salt = (unsigned char *)luaL_checklstring(L, 2, &salt_len);
+  unsigned int iter    = (unsigned int) luaL_checkint(L, 3);
+  unsigned int key_len = (unsigned int) luaL_checkint(L, 4);
+  unsigned char *key = buffer;
+
+  if(key_len > sizeof(buffer)){
+    key = (unsigned char *)malloc(key_len);
+    if(!key){
+      lua_pushstring(L, "malloc error");
+      return lua_error(L);
+    }
+  }
+
+  derive_key(pwd, pwd_len, salt, salt_len, iter, key, key_len);
+
+  lua_pushlstring(L, (char*)key, key_len);
+
+  if(key != buffer){
+    free(key);
+  }
+
+  return 1;
+}
+
+//}
+
 static const struct luaL_Reg SHA_NAME(l_sha,lib)[] = {
-  {"new",    SHA_NAME(l_sha, new)  },
-  {"digest", SHA_NAME(l_sha, hash) },
+  {"new",    SHA_NAME(l_sha, new)    },
+  {"digest", SHA_NAME(l_sha, hash)   },
+  {"pbkdf2", SHA_NAME(l_sha, pbkdf2) },
   {NULL, NULL}
 };
 
@@ -413,6 +451,7 @@ INT_RETURN CAT2(luaopen_bgcrypto_sha, L_SHA_MODE) (lua_State*L){
 #undef hmac_sha_data   
 #undef hmac_sha_end    
 #undef hmac_sha        
+#undef derive_key
 
 #undef L_SHA_NAME
 #undef CAT2
