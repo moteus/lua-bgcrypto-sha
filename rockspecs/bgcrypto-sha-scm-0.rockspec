@@ -18,11 +18,13 @@ dependencies = {
 }
 
 local function make_module()
-  local result = {}
+  local result = {
+    ['bgcrypto.pbkdf2'] = 'src/lua/pbkdf2.lua',
+  }
   local names = {'sha1','sha224','sha256','sha384','sha512'}
   for i = 1, #names do
     local name = names[i]
-    result["bgcrypto." .. name] = {
+    result['bgcrypto.' .. name] = {
       sources = {
         'src/l52util.c', 'src/sha/sha1.c', 'src/sha/sha2.c',
         'src/l' .. name ..'.c'
@@ -40,11 +42,11 @@ build = {
 
   platforms = {
     windows = { modules = {
-      ["bgcrypto.sha1"  ] = { defines = {'DLL_EXPORT'} },
-      ["bgcrypto.sha224"] = { defines = {'DLL_EXPORT'} },
-      ["bgcrypto.sha256"] = { defines = {'DLL_EXPORT'} },
-      ["bgcrypto.sha384"] = { defines = {'DLL_EXPORT'} },
-      ["bgcrypto.sha512"] = { defines = {'DLL_EXPORT'} },
+      ['bgcrypto.sha1'  ] = { defines = {'DLL_EXPORT'} },
+      ['bgcrypto.sha224'] = { defines = {'DLL_EXPORT'} },
+      ['bgcrypto.sha256'] = { defines = {'DLL_EXPORT'} },
+      ['bgcrypto.sha384'] = { defines = {'DLL_EXPORT'} },
+      ['bgcrypto.sha512'] = { defines = {'DLL_EXPORT'} },
     }},
   },
 

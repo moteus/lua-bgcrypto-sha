@@ -44,6 +44,7 @@ install:
 script:
   - cd test
   - lua$LUA_SFX test_sha.lua
+  - lua$LUA_SFX test_pbkdf2.lua
 
 notifications:
   email:

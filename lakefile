@@ -24,6 +24,7 @@ target('build', SHA)
 
 
 local INSTALL_LIST = {
+  file.group{odir = J(LIBDIR, 'bgcrypto'); src = J('src', 'lua', '*')};
   file.group{odir = TESTDIR; src = J('test', '*')};
 }
 for _, sha in ipairs(SHA) do
@@ -35,6 +36,7 @@ install = target('install', INSTALL_LIST)
 
 target('test', install, function()
   run_test('test_sha.lua')
+  run_test('test_pbkdf2.lua')
 end)
 
 default('build')
