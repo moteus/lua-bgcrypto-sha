@@ -15,7 +15,7 @@ description = {
 
 dependencies = {
   "lua >= 5.1",
-  "bit32",
+  -- "bit32",
 }
 
 local function make_module()

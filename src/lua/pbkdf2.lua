@@ -1,8 +1,16 @@
-local bit    = require "bit32"
+local function orequire(...)
+  for i = 1, select('#', ...) do
+    local name = select(i, ...)
+    local ok, mod = pcall(require, name)
+    if ok then return mod, name end
+  end
+end
 
-local sbyte   = string.byte
-local schar   = string.char
-local bxor    = bit.bxor
+local bit = assert(orequire("bit32", "bit"), 'no bit32 module')
+
+local sbyte = string.byte
+local schar = string.char
+local bxor  = bit.bxor
 
 local function H(t, b, e)
   local str = ''
