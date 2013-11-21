@@ -23,8 +23,8 @@ local PWD_VER_LENGTH = 2
 local KEYING_ITERATIONS = 1000
 
 ---
--- @tparam ?number block_size for zip files need 16
-function AesFileEncrypt:new(block_size)
+--
+function AesFileEncrypt:new()
   local o = setmetatable({
     private_ = {}
   }, self)
@@ -56,7 +56,7 @@ function AesFileEncrypt:open(mode, pwd, salt)
   local mac     = sha1.hmac.new(mac_key)
   local encrypt = aes.ctr_encrypter()
   encrypt:set_inc_mode("fi") -- firward increment
-  encrypt:open(aes_key, '\1' .. ('\0'):rep(15))
+  encrypt:open(aes_key, '\1' .. ('\0'):rep(aes.BLOCK_SIZE - 1))
 
   self.private_.mac     = mac
   self.private_.encrypt = encrypt
