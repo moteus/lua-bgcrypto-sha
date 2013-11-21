@@ -1,6 +1,5 @@
-local aes        = require "bgcrypto.aes"
-local sha1       = require "bgcrypto.sha1"
-local derive_key = require "bgcrypto.pbkdf2"
+local aes  = require "bgcrypto.aes"
+local sha1 = require "bgcrypto.sha1"
 
 local function rand_bytes(n)
   local t = {}
@@ -48,7 +47,7 @@ function AesFileEncrypt:open(mode, pwd, salt)
   self.private_.salt = salt
 
   local key_len = self.private_.mode.key
-  local key     = derive_key(sha1, pwd, salt, KEYING_ITERATIONS, 2 * key_len + PWD_VER_LENGTH)
+  local key     = sha1.pbkdf2(pwd, salt, KEYING_ITERATIONS, 2 * key_len + PWD_VER_LENGTH)
 
   local aes_key = key:sub(1, key_len)
   local mac_key = key:sub(1 + key_len,  2 * key_len)
@@ -62,7 +61,6 @@ function AesFileEncrypt:open(mode, pwd, salt)
   self.private_.mac     = mac
   self.private_.encrypt = encrypt
   self.private_.last_fn = self.encrypt
-  
 
   return salt, pwd_ver
 end
