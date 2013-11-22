@@ -4,9 +4,9 @@ local sha1 = require "bgcrypto.sha1"
 local function rand_bytes(n)
   local t = {}
   for i=1, n do
-    table.insert(t, math.random(256) - 1)
+    table.insert(t, string.char(math.random(256) - 1))
   end
-  return H(t)
+  return table.concat(t)
 end
 
 local AesFileEncrypt = {}
