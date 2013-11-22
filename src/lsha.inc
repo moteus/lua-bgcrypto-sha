@@ -26,6 +26,68 @@ static int pass(lua_State *L){
   return 1;
 }
 
+/* return [ buffer[be], buffer[en] ] */
+static const char* correct_range(lua_State *L, int idx, size_t *size){
+  if(lua_islightuserdata(L, idx)){
+    /* (ud, [offset=0,] size) */
+    const char *input = (const char*)lua_touserdata(L, idx);
+    int of, sz;
+
+    if(lua_isnumber(L, idx + 1) && lua_isnumber(L, idx + 2)){
+      of = lua_tointeger(L, idx + 1);
+      sz = lua_tointeger(L, idx + 2);
+      lua_remove(L, idx + 1);
+      lua_remove(L, idx + 1);
+    }
+    else{
+      of = 0;
+      sz = luaL_checkinteger(L, idx + 1);
+      lua_remove(L, idx + 1);
+    }
+
+    luaL_argcheck(L, of >= 0, idx+1, "invalid offset");
+    luaL_argcheck(L, sz >= 0, idx+2, "invalid size"  );
+
+    *size = sz;
+    return input + of;
+  }
+
+  else{
+    /* (str, [be=1[, size=(#str-be+1)]]) */
+    size_t len; const char *input = luaL_checklstring(L, idx, &len);
+    int be, sz;
+    if(lua_isnumber(L, idx+1)){
+      be = lua_tointeger(L, idx+1);
+      lua_remove(L, idx+1);
+      luaL_argcheck(L, be > 0, idx+1, "invalid begin index");
+    }else be = 1;
+
+    if(lua_isnumber(L, idx+1)){
+      sz = lua_tointeger(L, idx+1);
+      lua_remove(L, idx+1);
+      luaL_argcheck(L, sz >= 0, idx+2, "invalid size");
+    }else sz = len;
+
+    if((size_t)be > len){
+      *size = 0;
+      return input;
+    }
+
+    len = len - be + 1;
+
+    if((size_t)sz > len) sz = len;
+
+    *size = sz;
+    return input + be - 1;
+  }
+}
+
+static const char* opt_correct_range(lua_State *L, int idx, size_t *size){
+  if( lua_isstring(L, idx) || lua_islightuserdata(L, idx) )
+    return correct_range(L, idx, size);
+  return NULL;
+}
+
 static const char HEX_DIGEST[] = {'0','1','2','3','4','5','6','7','8','9','a','b','c','d','e','f'};
 
 #endif
@@ -127,7 +189,7 @@ static int SHA_NAME(l_sha,destroyed)(lua_State *L){
 
 static int SHA_NAME(l_sha,update)(lua_State *L){
   SHA_NAME(l_sha,ctx) *ctx = SHA_NAME(l_get_sha,at)(L, 1);
-  size_t len; const unsigned char *data = (unsigned char *)luaL_checklstring(L, 2, &len);
+  size_t len; const unsigned char *data = (unsigned char *)correct_range(L, 2, &len);
 
   SHA_NAME(sha,hash)(data, len, ctx->ctx);
 
@@ -149,10 +211,12 @@ static int SHA_NAME(l_sha,digest)(lua_State *L){
   unsigned char buffer[SHA_NAME(SHA,DIGEST_SIZE)];
   SHA_NAME(sha,ctx) sctx[1];
 
-  if(lua_type(L, 2) == LUA_TSTRING){
-    size_t len; const unsigned char *data = (unsigned char *)luaL_checklstring(L, 2, &len);
-    SHA_NAME(sha,hash)(data, len, ctx->ctx);
-    lua_remove(L, 2);
+  { /*last chunk*/
+    size_t len; const unsigned char *data = (unsigned char *)opt_correct_range(L, 2, &len);
+    if(data){
+      SHA_NAME(sha,hash)(data, len, ctx->ctx);
+      lua_remove(L, 2);
+    }
   }
 
   memcpy(&sctx[0], &ctx->ctx[0], sizeof(SHA_NAME(sha,ctx)));
@@ -171,7 +235,7 @@ static int SHA_NAME(l_sha,digest)(lua_State *L){
 static int SHA_NAME(l_sha,hash)(lua_State *L){
   SHA_NAME(sha,ctx) ctx[1];
   unsigned char buffer[SHA_NAME(SHA,DIGEST_SIZE)];
-  size_t len; const unsigned char *data = (unsigned char *)luaL_checklstring(L, 1, &len);
+  size_t len; const unsigned char *data = (unsigned char *)correct_range(L, 1, &len);
 
   SHA_NAME(sha,begin)(ctx);
 
@@ -301,7 +365,7 @@ static int HMAC_NAME(l_hmac,destroyed)(lua_State *L){
 
 static int HMAC_NAME(l_hmac,update)(lua_State *L){
   HMAC_NAME(l_hmac,ctx) *ctx = HMAC_NAME(l_get_hmac,at)(L, 1);
-  size_t len; const unsigned char *data = (unsigned char *)luaL_checklstring(L, 2, &len);
+  size_t len; const unsigned char *data = (unsigned char *)correct_range(L, 2, &len);
 
   hmac_sha_data(data, len, ctx->ctx);
 
@@ -325,10 +389,12 @@ static int HMAC_NAME(l_hmac,digest)(lua_State *L){
   unsigned char buffer[SHA_NAME(SHA, DIGEST_SIZE)];
   hmac_ctx sctx[1];
 
-  if(lua_type(L, 2) == LUA_TSTRING){
-    size_t len; const unsigned char *data = (unsigned char *)luaL_checklstring(L, 2, &len);
-    hmac_sha_data(data, len, ctx->ctx);
-    lua_remove(L, 2);
+  { /*last chunk*/
+    size_t len; const unsigned char *data = (unsigned char *)opt_correct_range(L, 2, &len);
+    if(data){
+      hmac_sha_data(data, len, ctx->ctx);
+      lua_remove(L, 2);
+    }
   }
 
   memcpy(&sctx[0], &ctx->ctx[0], sizeof(hmac_ctx));
@@ -348,7 +414,7 @@ static int HMAC_NAME(l_hmac,hash)(lua_State *L){
   hmac_ctx ctx[1];
   unsigned char buffer[SHA_NAME(SHA, DIGEST_SIZE)];
   size_t key_len;  const unsigned char *key  = (unsigned char *)luaL_checklstring(L, 1, &key_len);
-  size_t data_len; const unsigned char *data = (unsigned char *)luaL_checklstring(L, 2, &data_len);
+  size_t data_len; const unsigned char *data = (unsigned char *)correct_range(L, 2, &data_len);
 
   hmac_sha_begin(ctx);
   hmac_sha_key(key, key_len, ctx);
