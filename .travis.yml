@@ -42,12 +42,17 @@ install:
   - if [ $LUA = "lua5.1" ]; then
       sudo luarocks install bit32;
     fi
+  - sudo apt-get install libzmq3
+  - sudo apt-get install libzmq3-dev
+  - sudo luarocks install lzmq
+  - sudo luarocks install lunitx
   - sudo luarocks make rockspecs/bgcrypto-sha-scm-0.rockspec
 
 script:
   - cd test
   - lua$LUA_SFX test_sha.lua
   - lua$LUA_SFX test_pbkdf2.lua
+  - lunit.sh -i lua$LUA_SFX utest_sha.lua
 
 notifications:
   email:

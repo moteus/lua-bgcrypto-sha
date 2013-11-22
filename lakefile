@@ -35,8 +35,7 @@ end
 install = target('install', INSTALL_LIST)
 
 target('test', install, function()
-  run_test('test_sha.lua')
-  run_test('test_pbkdf2.lua')
+  run_test('utest_sha.lua')
 end)
 
 default('build')
