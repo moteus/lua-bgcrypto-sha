@@ -15,6 +15,7 @@ local sha = {
   sha512 = require "bgcrypto.sha512";
 }
 local pbkdf2 = require "bgcrypto.pbkdf2"
+local hmac   = require "bgcrypto.hmac"
 -- use to test lighuserdata
 local zmq  = prequire("lzmq")
 
@@ -436,6 +437,7 @@ for i, test in ipairs(HMAC) do
   end
 
   for algo, etalon in pairs(test[1]) do
+    local hash   = FN[algo][1]
     local digest = FN[algo].hmac.digest
     local new    = FN[algo].hmac.new
 
@@ -454,6 +456,12 @@ for i, test in ipairs(HMAC) do
       assert_equal(d:digest(), d:digest())
     end)
 
+    TEST(algo, "double_lua_impl", function()
+      d = hmac.new(hash, key)
+      d:update("123")
+      assert_equal(d:digest(), d:digest())
+    end)
+
     TEST(algo, "clone", function()
       d = new(key)
       d2 = d:update("123"):clone()
@@ -462,8 +470,23 @@ for i, test in ipairs(HMAC) do
       assert_equal(d:digest(), d2:digest())
     end)
 
-    TEST(algo, "digest", function()
+    TEST(algo, "clone_lua-impl", function()
+      d = hmac.new(hash, key)
+      d2 = d:update("123"):clone()
+      assert_not_equal(d, d2)
+      d:update("456") d2:update("456")
+      assert_equal(d:digest(), d2:digest())
+    end)
+
+    TEST(algo, "digest_obj", function()
       d = new(key)
+      for i = 1, count do d:update(msg) end
+      assert_equal(etalon, STR(d:digest()):sub(1,#etalon))
+      assert_equal(etalon, d:digest(true):sub(1,#etalon))
+    end)
+
+    TEST(algo, "digest_obj_lua_impl", function()
+      d = hmac.new(hash, key)
       for i = 1, count do d:update(msg) end
       assert_equal(etalon, STR(d:digest()):sub(1,#etalon))
       assert_equal(etalon, d:digest(true):sub(1,#etalon))
@@ -475,8 +498,27 @@ for i, test in ipairs(HMAC) do
       assert_equal(STR(h), STR(d:reset(key):update("123"):digest()))
     end)
 
+    TEST(algo, "reset_lua_impl", function()
+      d = hmac.new(hash, key)
+      local h = d:update("123"):digest()
+      assert_equal(STR(h), STR(d:reset(key):update("123"):digest()))
+      assert_equal(STR(h), STR(d:reset():update("123"):digest()))
+    end)
+
     if COUNT == 1 then -- do not try allocate big msg
       TEST(algo, "digest", function()
+        assert_equal(etalon, digest(key, msg, true):sub(1,#etalon))
+        assert_equal(etalon, STR(digest(key, msg)):sub(1,#etalon))
+        assert_equal(etalon, STR(digest(key, msg, 1)):sub(1,#etalon))
+        assert_equal(etalon, STR(digest(key, msg, 1, #msg)):sub(1,#etalon))
+        assert_equal(etalon, digest(key, msg, 1, true):sub(1,#etalon))
+        assert_equal(etalon, digest(key, msg, 1, #msg, true):sub(1,#etalon))
+        assert_equal(etalon, STR(digest(key, "*" .. msg, 2)):sub(1,#etalon))
+        assert_equal(etalon, STR(digest(key, "*" .. msg .. "*", 2, #msg)):sub(1,#etalon))
+      end)
+
+      TEST(algo, "digest_lua_impl", function()
+        local digest = function(...) return hmac.digest(hash, ...) end
         assert_equal(etalon, digest(key, msg, true):sub(1,#etalon))
         assert_equal(etalon, STR(digest(key, msg)):sub(1,#etalon))
         assert_equal(etalon, STR(digest(key, msg, 1)):sub(1,#etalon))
@@ -493,6 +535,12 @@ for i, test in ipairs(HMAC) do
         assert_equal(etalon, STR(d:digest()):sub(1,#etalon))
       end)
 
+      TEST(algo, "iter_lua_impl", function()
+        d = hmac.new(hash, key)
+        for i = 1, #msg do d:update((msg:sub(i,i))) end
+        assert_equal(etalon, STR(d:digest()):sub(1,#etalon))
+      end)
+
       TEST(algo, "iter_slice", function()
         d = new(key)
         for i = 1, #msg do d:update(msg, i, 1) end
@@ -501,6 +549,13 @@ for i, test in ipairs(HMAC) do
 
       TEST(algo, "slice", function()
         d = new(key)
+        d:update(msg, 1, math.floor(#msg/2))
+        d:update(msg, math.floor(#msg/2) + 1)
+        assert_equal(etalon, STR(d:digest()):sub(1,#etalon))
+      end)
+
+      TEST(algo, "slice_lua_impl", function()
+        d = hmac.new(hash, key)
         d:update(msg, 1, math.floor(#msg/2))
         d:update(msg, math.floor(#msg/2) + 1)
         assert_equal(etalon, STR(d:digest()):sub(1,#etalon))
