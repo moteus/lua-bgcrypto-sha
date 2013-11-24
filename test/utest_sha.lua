@@ -18,6 +18,7 @@ local pbkdf2 = require "bgcrypto.pbkdf2"
 local hmac   = require "bgcrypto.hmac"
 -- use to test lighuserdata
 local zmq  = prequire("lzmq")
+local zmsg = zmq and zmq.msg_init()
 
 local IS_LUA52 = _VERSION >= 'Lua 5.2'
 
@@ -566,14 +567,30 @@ for i, test in ipairs(HMAC) do
           d = new(key)
           d:update(zmsg:pointer(), zmsg:size())
           assert_equal(etalon, STR(d:digest()):sub(1,#etalon))
+          d:reset(key):update(zmsg:pointer(), 0, zmsg:size())
+          assert_equal(etalon, STR(d:digest()):sub(1,#etalon))
+        end)
+
+        TEST(algo, "ud_digest_update_lua_impl", function()
+          d = hmac.new(hash, key)
+          d:update(zmsg:pointer(), zmsg:size())
+          assert_equal(etalon, STR(d:digest()):sub(1,#etalon))
           d:reset():update(zmsg:pointer(), 0, zmsg:size())
           assert_equal(etalon, STR(d:digest()):sub(1,#etalon))
         end)
+
         TEST(algo, "ud_iter_update", function()
           d = new(key)
           for i = 1, zmsg:size() do d:update(zmsg:pointer(), i-1, 1) end
           assert_equal(etalon, STR(d:digest()):sub(1,#etalon))
         end)
+
+        TEST(algo, "ud_iter_update_lua_impl", function()
+          d = hmac.new(hash, key)
+          for i = 1, zmsg:size() do d:update(zmsg:pointer(), i-1, 1) end
+          assert_equal(etalon, STR(d:digest()):sub(1,#etalon))
+        end)
+
       end
     end
   end
