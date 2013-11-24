@@ -21,6 +21,7 @@ dependencies = {
 local function make_module()
   local result = {
     ['bgcrypto.pbkdf2'] = 'src/lua/pbkdf2.lua',
+    ['bgcrypto.hmac']   = 'src/lua/hmac.lua',
   }
   local names = {'sha1','sha224','sha256','sha384','sha512'}
   for i = 1, #names do
