@@ -12,14 +12,6 @@ local sbyte = string.byte
 local schar = string.char
 local bxor  = bit.bxor
 
-local function H(t, b, e)
-  local str = ''
-  for i = b or 1, e or #t do
-    str = str .. (string.char(t[i]))
-  end
-  return str
-end
-
 local UNPACK_STR = {
   [20] = function(uu, str)
     uu[01], uu[02], uu[03], uu[04], uu[05], uu[06], uu[07], uu[08], uu[09], uu[10],
@@ -84,13 +76,13 @@ local function derive_key(hash, pwd, salt, iter, key_len)
     end
 
     for _, b in ipairs(ux) do
-      table.insert(key, b)
+      table.insert(key, string.char(b))
       if #key >= key_len then
-        return H(key)
+        return table.concat(key)
       end
     end
   end
-  return H(key)
+  return table.concat(key)
 end
 
 return derive_key
