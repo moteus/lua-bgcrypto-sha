@@ -93,7 +93,7 @@ end
 -- @treturt string last portion of data
 function AesFileEncrypt:close(chunk)
   if chunk then
-    chunk = self.private_.last_fn(chunk)
+    chunk = self.private_.last_fn(self, chunk)
   end
 
   local mac = self.private_.mac:digest()
