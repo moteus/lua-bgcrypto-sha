@@ -30,6 +30,11 @@ external_dependencies = {
 
 local function make_module()
   local result = {}
+  local plats  = {
+    windows = {modules = {}},
+    unix    = {modules = {}},
+  }
+
   local names = {
     --[['md2',]]'md4','md5','sha1','sha224','sha256','sha384','sha512','ripemd160'--[[,'mdc2']]
   }
@@ -43,16 +48,26 @@ local function make_module()
       defines = {'USE_' .. UNAME[i] .. '_OPENSSL'},
       incdirs = {'$(OPENSSL_INCDIR)'},
       libdirs = {'$(OPENSSL_LIBDIR)'},
-      -- libraries = {'libeay32', 'ssleay32'}, -- windows
-      libraries = {'crypto'}, -- *nix
     }
+    plats.windows.modules[name] = {
+      libraries = {'libeay32', 'ssleay32'}
+    };
+    plats.unix.modules[name] = {
+      libraries = {'crypto'}
+    };
+
   end
-  return result
+
+  return result, plats
 end
 
+local mod, plat = make_module()
+
 build = {
-   type = 'builtin',
-   modules = make_module(),
+  copy_directories = {},
+  type = 'builtin',
+  modules = mod,
+  platforms = plat,
 }
 
 
