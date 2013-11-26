@@ -45,6 +45,7 @@ local hmac = {} do
 hmac.__index = hmac
 
 function hmac:new(hash, key)
+  assert(type(key) == 'string')
   local o = setmetatable({
     private_ = {
       hash = hash;

@@ -24,7 +24,7 @@ target('build', SHA)
 
 
 local INSTALL_LIST = {
-  file.group{odir = J(LIBDIR, 'bgcrypto'); src = J('src', 'lua', '*')};
+  file.group{odir = J(LIBDIR, 'bgcrypto'); src = J('src', 'lua', '*'); recurse = true};
   file.group{odir = TESTDIR; src = J('test', '*')};
 }
 for _, sha in ipairs(SHA) do
