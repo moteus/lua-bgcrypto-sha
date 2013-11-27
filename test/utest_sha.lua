@@ -19,6 +19,8 @@ local hmac       = require  "bgcrypto.hmac"
 local md5        = prequire "bgcrypto.md5"
 local ripemd160  = prequire "bgcrypto.ripemd160"
 
+local sha1       = prequire "bgcrypto.private.digest"('sha1')
+
 -- use to test lighuserdata
 local zmq  = prequire("lzmq")
 local zmsg = zmq and zmq.msg_init()
@@ -330,7 +332,6 @@ local FN = {
 
 if md5       then FN["MD5"]       = {md5,        new = md5.new,        digest = md5.digest,        hmac = md5.hmac        }; end
 if ripemd160 then FN["RIPEMD160"] = {ripemd160,  new = ripemd160.new,  digest = ripemd160.digest,  hmac = ripemd160.hmac  }; end
-
 
 local SUPPORT_UD = {
   ["SHA-1"  ]   = true;
@@ -649,6 +650,12 @@ for _, test in ipairs(PBKDF2) do
   TEST(algo, 'pbkdf2_lua_implemented', function()
     assert_equal(test.DK, pbkdf2(hash, test.P, test.S, test.c, test.len))
   end)
+  
+  if (algo == "SHA-1") and sha1 then
+    TEST(algo, 'digest_pbkdf2', function()
+      assert_equal(test.DK, sha1.pbkdf2(test.P, test.S, test.c, test.len))
+    end)
+  end
 
 end
 

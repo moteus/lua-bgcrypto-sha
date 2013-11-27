@@ -48,10 +48,12 @@ install:
   - sudo luarocks install lzmq
   - sudo luarocks install lunitx
   - sudo luarocks make rockspecs/bgcrypto-sha-scm-0.rockspec
-  - if [ $LUA = "lua5.1" ]; then
+  - if [ $LUA_VER = "5.1" ]; then
       sudo luarocks build rockspecs/lmd5-20130228-1.rockspec;
-      lua$LUA_SFX -lmd5 -v;
+    else
+      sudo luarocks build rockspecs/lmd5-20130228-2.rockspec;
     fi
+  - lua$LUA_SFX -lmd5 -v
 
 script:
   - cd test

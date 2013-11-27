@@ -1,15 +1,40 @@
 -- Use `digest` library http://www.tecgraf.puc-rio.br/~lhf/ftp/lua/install.html
 
-local hmac = require "bgcrypto.hmac"
+local hmac   = require "bgcrypto.hmac"
+local pbkdf2 = require "bgcrypto.pbkdf2"
 local hmac_hash = hmac.digest
 local hmac_new  = hmac.new
 
--- md5 / ripemd160
-local function require_digest(ALGO)
-  local ALGO       = require(ALGO)
-  local BLOCK_SIZE = 64
+local BLOCK_SIZE  = {
+  md2       = 64,
+  md4       = 64,
+  md5       = 64,
+  sha1      = 16,
+  sha224    = 16,
+  sha256    = 16,
+  sha384    = 16,
+  sha512    = 16,
+  ripemd160 = 64,
+}
 
-  local function digest(msg, text)
+local DIGEST_SIZE = {
+  md2       = 16,
+  md4       = 16,
+  md5       = 16,
+  sha1      = 20,
+  sha224    = 28,
+  sha256    = 32,
+  sha384    = 48,
+  sha512    = 64,
+  ripemd160 = 20,
+}
+
+local function require_digest(ALGO)
+  local BLOCK_SIZE  = assert(BLOCK_SIZE [ALGO])
+  local DIGEST_SIZE = assert(DIGEST_SIZE[ALGO])
+  local ALGO        = require(ALGO)
+  
+  local function digest(msg, text) 
     return ALGO.digest(msg, not text)
   end;
 
@@ -78,10 +103,13 @@ local function require_digest(ALGO)
   end
 
   local HASH = {
-    BLOCK_SIZE = BLOCK_SIZE;
-    digest = digest;
+    BLOCK_SIZE  = BLOCK_SIZE;
+    DIGEST_SIZE = DIGEST_SIZE;
+    digest = function(msg, text) return ALGO.digest(msg, not text) end;
     new    = function(...) return hash:new(...) end;
   }
+
+  HASH.pbkdf2 = function (...) return pbkdf2(HASH, ...) end
 
   HASH.hmac = {
     digest = function(...) return hmac_hash(HASH, ...) end;
