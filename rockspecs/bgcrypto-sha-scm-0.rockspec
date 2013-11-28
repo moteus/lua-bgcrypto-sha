@@ -7,9 +7,9 @@ source = {
 }
 
 description = {
-  summary  = "AES encryption library",
+  summary  = "SHA1/SHA2 digest library",
   homepage = "https://github.com/moteus/bgcrypto-sha",
-  detailed = [[Binding to Dr Brian Gladman's implementation of AES algorithm.]];
+  detailed = [[Binding to Dr Brian Gladman's implementation of SHA/HMAC algorithm.]];
   -- license = "MIT/X11",
 }
 
@@ -19,13 +19,7 @@ dependencies = {
 }
 
 local function make_module()
-  local result = {
-    ['bgcrypto.pbkdf2']           = 'src/lua/pbkdf2.lua',
-    ['bgcrypto.hmac']             = 'src/lua/hmac.lua',
-    ['bgcrypto.private.digest']   = 'src/lua/private/digest.lua',
-    ['bgcrypto.md5']              = 'src/lua/md5.lua',
-    ['bgcrypto.ripemd160']        = 'src/lua/ripemd160.lua',
-  }
+  local result = {}
   local names = {'sha1','sha224','sha256','sha384','sha512'}
   for i = 1, #names do
     local name = names[i]
