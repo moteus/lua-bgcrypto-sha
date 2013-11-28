@@ -375,10 +375,27 @@ static int HMAC_NAME(l_hmac,update)(lua_State *L){
 
 static int HMAC_NAME(l_hmac,reset)(lua_State *L){
   HMAC_NAME(l_hmac,ctx) *ctx = HMAC_NAME(l_get_hmac,at)(L, 1);
-  size_t len; const unsigned char *key = (unsigned char *)luaL_checklstring(L, 2, &len);
 
-  hmac_sha_begin(ctx->ctx);
-  hmac_sha_key(key, len, ctx->ctx);
+  if(lua_gettop(L) > 1){
+    size_t len; const unsigned char *key = (unsigned char *)luaL_checklstring(L, 2, &len);
+    hmac_sha_begin(ctx->ctx);
+    hmac_sha_key(key, len, ctx->ctx);
+  }
+  else{
+    /* This code based on implementation in `hmac.c` */
+    /* Also it is important to does not call hmac_sha_end to this ctx*/
+    unsigned char key[ sizeof(ctx->ctx->key) ];
+    unsigned long klen = ctx->ctx->klen;
+    memcpy(key, ctx->ctx->key, sizeof(ctx->ctx->key));
+
+    hmac_sha_begin(ctx->ctx);
+    memcpy(ctx->ctx->key, key, sizeof(ctx->ctx->key));
+    ctx->ctx->klen = klen;
+    if(klen == HMAC_IN_DATA){
+      SHA_NAME(sha, begin)(ctx->ctx->ctx);
+      hmac_sha_data(key, sizeof(ctx->ctx->key), ctx->ctx);
+    }
+  }
 
   lua_settop(L, 1);
   return 1;

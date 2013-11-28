@@ -482,11 +482,18 @@ for i, test in ipairs(HMAC) do
       assert_error(function() new() end)
     end)
 
-    --@todo
-    -- TEST(algo, "reset_no_key", function()
-    --   d = new(key)
-    --   assert_error(function() d:reset() end)
-    -- end)
+    TEST(algo, "reset_no_key", function()
+      d = new(key)
+      local c = d:update("123"):digest()
+      local b = d:update("123"):digest()
+      assert_not_equal(STR(c), STR(b))
+
+      b = d:reset(key):update("123"):digest()
+      assert_equal(STR(c), STR(b))
+
+      b = d:reset():update("123"):digest()
+      assert_equal(STR(c), STR(b))
+    end)
 
     TEST(algo, "double", function()
       d = new(key)
