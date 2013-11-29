@@ -33,9 +33,19 @@ local function require_digest(ALGO)
   local BLOCK_SIZE  = assert(BLOCK_SIZE [ALGO])
   local DIGEST_SIZE = assert(DIGEST_SIZE[ALGO])
   local ALGO        = require(ALGO)
-  
-  local function digest(msg, text) 
-    return ALGO.digest(msg, not text)
+
+  local function digest(value, i, size, text)
+    if type(i) ~= 'number' then text = not not i
+    else
+      if type(size) ~= 'number' then
+        size, text = #value, not not size
+      end
+      assert(i > 0)
+      assert(size >= 0)
+      value = string.sub(value, i, i + size - 1)
+    end
+
+    return ALGO.digest(value, not text)
   end;
 
   local hash = {} do
@@ -61,6 +71,7 @@ local function require_digest(ALGO)
 
   function hash:reset()
     self.private_.ctx = ALGO.new()
+    return self
   end
 
   function hash:destroy()
@@ -81,7 +92,9 @@ local function require_digest(ALGO)
       value = string.sub(value, i, i + size - 1)
     end
 
-    return self.private_.ctx:update(value)
+    local ok, err = self.private_.ctx:update(value)
+    if ok then return self end
+    return ok, err
   end
 
   function hash:digest(value, i, size, text)
@@ -105,13 +118,15 @@ local function require_digest(ALGO)
   local HASH = {
     BLOCK_SIZE  = BLOCK_SIZE;
     DIGEST_SIZE = DIGEST_SIZE;
-    digest = function(msg, text) return ALGO.digest(msg, not text) end;
+    digest = digest;
     new    = function(...) return hash:new(...) end;
   }
 
   HASH.pbkdf2 = function (...) return pbkdf2(HASH, ...) end
 
   HASH.hmac = {
+    BLOCK_SIZE  = BLOCK_SIZE;
+    DIGEST_SIZE = DIGEST_SIZE;
     digest = function(...) return hmac_hash(HASH, ...) end;
     new    = function(...) return hmac_new (HASH, ...) end;
   }
