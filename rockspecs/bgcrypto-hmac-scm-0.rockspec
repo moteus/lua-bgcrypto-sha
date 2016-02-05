@@ -24,7 +24,8 @@ build = {
   type = "builtin",
 
   modules = {
-    ['bgcrypto.hmac']   = 'src/lua/hmac.lua'
+    ['bgcrypto.private.bit'] = 'src/lua/private/bit.lua',
+    ['bgcrypto.hmac']        = 'src/lua/hmac.lua'
   }
 }
 

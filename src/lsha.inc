@@ -469,8 +469,8 @@ static int SHA_NAME(l_sha, pbkdf2)(lua_State *L){
 
   size_t pwd_len;  const unsigned char *pwd  = (unsigned char *)luaL_checklstring(L, 1, &pwd_len );
   size_t salt_len; const unsigned char *salt = (unsigned char *)luaL_checklstring(L, 2, &salt_len);
-  unsigned int iter    = (unsigned int) luaL_checkint(L, 3);
-  unsigned int key_len = (unsigned int) luaL_checkint(L, 4);
+  unsigned int iter    = (unsigned int) luaL_checkinteger(L, 3);
+  unsigned int key_len = (unsigned int) luaL_checkinteger(L, 4);
   unsigned char *key = buffer;
 
   if(key_len > sizeof(buffer)){

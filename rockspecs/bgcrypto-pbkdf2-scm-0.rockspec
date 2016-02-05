@@ -24,7 +24,8 @@ build = {
   type = "builtin",
 
   modules = {
-    ['bgcrypto.pbkdf2'] = 'src/lua/pbkdf2.lua'
+    ['bgcrypto.private.bit'] = 'src/lua/private/bit.lua',
+    ['bgcrypto.pbkdf2']      = 'src/lua/pbkdf2.lua'
   }
 }
 

@@ -1,12 +1,4 @@
-local function orequire(...)
-  for i = 1, select('#', ...) do
-    local name = select(i, ...)
-    local ok, mod = pcall(require, name)
-    if ok then return mod, name end
-  end
-end
-
-local bit = assert(orequire("bit32", "bit"), 'no bit32 module')
+local bit = require "bgcrypto.private.bit"
 
 local sbyte = string.byte
 local schar = string.char
