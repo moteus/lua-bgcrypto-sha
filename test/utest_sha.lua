@@ -20,13 +20,16 @@ local pbkdf2     = require  "bgcrypto.pbkdf2"
 local hmac       = require  "bgcrypto.hmac"
 local md5        = prequire "bgcrypto.md5"
 local ripemd160  = prequire "bgcrypto.ripemd160"
-local digest     = require  "bgcrypto.private.digest"
+local digest     = prequire "bgcrypto.private.digest"
 
-local ok, sha1, sha256
-ok, sha1 = pcall(digest, 'sha1')
-if not ok then sha1 = nil end
-ok, sha256 = pcall(digest, 'sha256')
-if not ok then sha256 = nil end
+local sha1, sha256
+if digest then
+  local ok, sha1, sha256
+  ok, sha1 = pcall(digest, 'sha1')
+  if not ok then sha1 = nil end
+  ok, sha256 = pcall(digest, 'sha256')
+  if not ok then sha256 = nil end
+end
 
 -- use to test lighuserdata
 local zmq  = prequire("lzmq")
