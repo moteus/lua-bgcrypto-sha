@@ -9,11 +9,11 @@ local BLOCK_SIZE  = {
   md2       = 64,
   md4       = 64,
   md5       = 64,
-  sha1      = 16,
-  sha224    = 16,
-  sha256    = 16,
-  sha384    = 16,
-  sha512    = 16,
+  sha1      = 64,
+  sha224    = 64,
+  sha256    = 64,
+  sha384    = 64,
+  sha512    = 64,
   ripemd160 = 64,
 }
 
