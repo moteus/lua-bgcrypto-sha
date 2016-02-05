@@ -53,6 +53,10 @@ script:
   - lua test_pbkdf2.lua
   - lunit.sh utest_sha.lua
 
+after_success:
+  - coveralls -b .. -r .. -i ./src --dump c.report.json
+  - luacov-coveralls -j c.report.json -v
+
 notifications:
   email:
     on_success: change
