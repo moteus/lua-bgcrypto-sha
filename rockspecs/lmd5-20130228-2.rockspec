@@ -17,7 +17,7 @@ description = {
 }
 
 dependencies = {
-   "lua ~> 5.2"
+  "lua >= 5.2, < 5.4",
 }
 
 external_dependencies = {
@@ -25,8 +25,6 @@ external_dependencies = {
    header = "openssl/opensslv.h"
   }
 }
-
-
 
 local function make_module()
   local result = {}

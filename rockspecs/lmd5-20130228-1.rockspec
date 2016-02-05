@@ -26,8 +26,6 @@ external_dependencies = {
   }
 }
 
-
-
 local function make_module()
   local result = {}
   local plats  = {

@@ -14,7 +14,7 @@ description = {
 }
 
 dependencies = {
-  "lua >= 5.1",
+  "lua >= 5.1, < 5.4",
   -- "lmd5",
   "bgcrypto-hmac",
   "bgcrypto-pbkdf2",
