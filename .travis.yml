@@ -49,8 +49,8 @@ before_script:
 
 script:
   - cd test
-  - lua test_sha.lua
-  - lua test_pbkdf2.lua
+  - lua -lluacov test_sha.lua
+  - lua -lluacov test_pbkdf2.lua
   - lunit.sh utest_sha.lua
 
 after_success:
