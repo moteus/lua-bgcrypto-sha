@@ -24,7 +24,7 @@ local digest     = prequire "bgcrypto.private.digest"
 
 local sha1, sha256
 if digest then
-  local ok, sha1, sha256
+  local ok
   ok, sha1 = pcall(digest, 'sha1')
   if not ok then sha1 = nil end
   ok, sha256 = pcall(digest, 'sha256')
