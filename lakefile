@@ -2,26 +2,33 @@ PROJECT = 'bgcrypto'
 
 INITLAKEFILE()
 
-DEFINES = L{DEFINES, IF(WINDOWS, 'DLL_EXPORT', '')}
+DEFINES = L{
+  DEFINES,
+  'RETURN_VALUES',
+  'VOID_RETURN=void',
+  'INT_RETURN=int'
+}
 
 
 local SHA = {}
-for _, name in ipairs{'sha','sha1','sha224','sha256','sha384','sha512'} do
+for _, name in ipairs{'sha1','sha224','sha256','sha384','sha512'} do
   local sha = c.shared{name,
     base     = 'src',
     src      = {'sha/*.c', 'l52util.c', 'l' .. name .. '.c'},
-    exclude  = {'sha/hmac.c','sha/pwd2key.c'},
+    exclude  = {'sha/pwd2key.c'},
     needs    = {LUA_NEED},
     incdir   = {'sha'},
     defines  = DEFINES,
     dynamic  = DYNAMIC,
     strip    = true,
   }
+
+  target(name, sha)
+
   table.insert(SHA, sha)
 end
 
 target('build', SHA)
-
 
 local INSTALL_LIST = {
   file.group{odir = J(LIBDIR, 'bgcrypto'); src = J('src', 'lua', '*'); recurse = true};

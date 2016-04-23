@@ -4,6 +4,7 @@
 #include "lua.h"
 #include "sha1.h"
 #include "sha2.h"
+#include "hmac.h"
 #include "l52util.h"
 #include <assert.h>
 #include <memory.h>
@@ -267,39 +268,9 @@ static const struct luaL_Reg SHA_NAME(l_sha, meth)[] = {
 
 //}
 
-#define hmac_ctx        CAT4(hmac, _sha, L_SHA_MODE, _ctx  )
-#define hmac_sha_begin  CAT4(hmac, _sha, L_SHA_MODE, _begin)
-#define hmac_sha_key    CAT4(hmac, _sha, L_SHA_MODE, _key  )
-#define hmac_sha_data   CAT4(hmac, _sha, L_SHA_MODE, _data )
-#define hmac_sha_end    CAT4(hmac, _sha, L_SHA_MODE, _end  )
-#define hmac_sha        CAT4(hmac, _sha, L_SHA_MODE, _hash )
-#define derive_key      CAT3(pbkdf2, _sha, L_SHA_MODE)
-
-//{ HMAC.c
-
-#define HASH_INPUT_SIZE     SHA_NAME(SHA, BLOCK_SIZE)
-#define HASH_OUTPUT_SIZE    SHA_NAME(SHA, DIGEST_SIZE)
-#define sha_ctx             SHA_NAME(sha, ctx)
-#define sha_begin           SHA_NAME(sha, begin)
-#define sha_hash            SHA_NAME(sha, hash)
-#define sha_end             SHA_NAME(sha, end)
-
-#include "hmac.c"
-#include "pwd2key.c"
-
-#undef _HMAC_H
-#undef PWD2KEY_H
-
-#undef HASH_INPUT_SIZE
-#undef HASH_OUTPUT_SIZE
-#undef sha_ctx
-#undef sha_begin
-#undef sha_hash
-#undef sha_end
-
-//}
-
 //{ HMAC
+
+#define L_HMAC_HASH_ID CAT2(HMAC_SHA, L_SHA_MODE)
 
 static const char * HMAC_NAME(L_HMAC, CTX) = L_HMAC_NAME;
 
@@ -321,7 +292,7 @@ static int HMAC_NAME(l_hmac,new)(lua_State *L){
 
   memset(ctx, 0, sizeof(HMAC_NAME(l_hmac,ctx)));
 
-  hmac_sha_begin(ctx->ctx);
+  hmac_sha_begin(L_HMAC_HASH_ID, ctx->ctx);
   hmac_sha_key(key, len, ctx->ctx);
 
   return 1;
@@ -378,7 +349,7 @@ static int HMAC_NAME(l_hmac,reset)(lua_State *L){
 
   if(lua_gettop(L) > 1){
     size_t len; const unsigned char *key = (unsigned char *)luaL_checklstring(L, 2, &len);
-    hmac_sha_begin(ctx->ctx);
+    hmac_sha_begin(L_HMAC_HASH_ID, ctx->ctx);
     hmac_sha_key(key, len, ctx->ctx);
   }
   else{
@@ -388,12 +359,12 @@ static int HMAC_NAME(l_hmac,reset)(lua_State *L){
     unsigned long klen = ctx->ctx->klen;
     memcpy(key, ctx->ctx->key, sizeof(ctx->ctx->key));
 
-    hmac_sha_begin(ctx->ctx);
+    hmac_sha_begin(L_HMAC_HASH_ID, ctx->ctx);
     memcpy(ctx->ctx->key, key, sizeof(ctx->ctx->key));
     ctx->ctx->klen = klen;
     if(klen == HMAC_IN_DATA){
-      SHA_NAME(sha, begin)(ctx->ctx->ctx);
-      hmac_sha_data(key, sizeof(ctx->ctx->key), ctx->ctx);
+      SHA_NAME(sha, begin)(&ctx->ctx->sha_ctx->CAT2(u_sha, L_SHA_MODE));
+      hmac_sha_data(key, ctx->ctx->input_len, ctx->ctx);
     }
   }
 
@@ -433,7 +404,7 @@ static int HMAC_NAME(l_hmac,hash)(lua_State *L){
   size_t key_len;  const unsigned char *key  = (unsigned char *)luaL_checklstring(L, 1, &key_len);
   size_t data_len; const unsigned char *data = (unsigned char *)correct_range(L, 2, &data_len);
 
-  hmac_sha_begin(ctx);
+  hmac_sha_begin(L_HMAC_HASH_ID, ctx);
   hmac_sha_key(key, key_len, ctx);
   hmac_sha_data(data, data_len, ctx);
   hmac_sha_end(buffer, sizeof(buffer), ctx);
@@ -464,6 +435,14 @@ static const struct luaL_Reg HMAC_NAME(l_hmac, meth)[] = {
 
 //{ PBKDF2
 
+#define derive_key      CAT3(pbkdf2, _sha, L_SHA_MODE)
+
+#if L_SHA_MODE != 1
+# define HMAC_SHA1 CAT2(HMAC_SHA, L_SHA_MODE)
+#endif
+
+#include "pwd2key.c"
+
 static int SHA_NAME(l_sha, pbkdf2)(lua_State *L){
   unsigned char buffer[512];
 
@@ -492,6 +471,12 @@ static int SHA_NAME(l_sha, pbkdf2)(lua_State *L){
   return 1;
 }
 
+#undef derive_key
+
+#if L_SHA_MODE != 1
+# undef HMAC_SHA1
+#endif
+
 //}
 
 static const struct luaL_Reg SHA_NAME(l_sha,lib)[] = {
@@ -507,7 +492,7 @@ static const struct luaL_Reg HMAC_NAME(l_hmac,lib)[] = {
   {NULL, NULL}
 };
 
-INT_RETURN CAT2(luaopen_bgcrypto_sha, L_SHA_MODE) (lua_State*L){
+LUTL_EXPORT int CAT2(luaopen_bgcrypto_sha, L_SHA_MODE) (lua_State*L){
   int top = lua_gettop(L);
   lutil_createmetap(L, SHA_NAME(L_SHA, CTX), SHA_NAME(l_sha,meth),0);
   lutil_createmetap(L, HMAC_NAME(L_HMAC, CTX), HMAC_NAME(l_hmac,meth),0);
@@ -530,13 +515,7 @@ INT_RETURN CAT2(luaopen_bgcrypto_sha, L_SHA_MODE) (lua_State*L){
 }
 
 
-#undef hmac_ctx        
-#undef hmac_sha_begin  
-#undef hmac_sha_key    
-#undef hmac_sha_data   
-#undef hmac_sha_end    
-#undef hmac_sha        
-#undef derive_key
+#undef L_HMAC_HASH_ID
 
 #undef L_SHA_NAME
 #undef CAT2

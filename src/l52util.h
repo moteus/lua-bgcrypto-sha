@@ -4,26 +4,47 @@
 #include "lua.h"
 #include "lauxlib.h"
 
+#ifndef LUTL_EXPORT
+#  ifdef DLL_IMPORT
+#    if defined( _MSC_VER ) || defined ( __INTEL_COMPILER )
+#      define LUTL_EXPORT     __declspec( dllimport )
+#    elif defined( __GNUC__ )
+#      define LUTL_EXPORT     __declspec( __dllimport__ )
+#    else
+#       define LUTL_EXPORT
+#    endif
+#  else
+#    if defined( _MSC_VER ) || defined ( __INTEL_COMPILER )
+#      define LUTL_EXPORT     __declspec( dllexport )
+#    elif defined( __GNUC__ )
+#      define LUTL_EXPORT     __declspec( __dllexport__ )
+#    else
+#       define LUTL_EXPORT
+#    endif
+#  endif
+#endif
+
 #if LUA_VERSION_NUM >= 502 // lua 5.2
 
-// lua_rawgetp
-// lua_rawsetp
-// luaL_setfuncs
-// lua_absindex
-
-
-#define lua_objlen      lua_rawlen
+#ifndef lua_objlen
+#  define lua_objlen      lua_rawlen
+#endif
 
 int   luaL_typerror (lua_State *L, int narg, const char *tname);
 
+#ifndef luaL_register
 void luaL_register (lua_State *L, const char *libname, const luaL_Reg *l);
+#endif
+
+#ifndef lua_equal
+#  define lua_equal(L,idx1,idx2) lua_compare(L,(idx1),(idx2),LUA_OPEQ)
+#endif
 
 #else                      // lua 5.1
 
 // functions form lua 5.2
 
 # define lua_absindex(L, i) (((i)>0)?(i):((i)<=LUA_REGISTRYINDEX?(i):(lua_gettop(L)+(i)+1)))
-# define lua_rawlen  lua_objlen
 
 void  lua_rawgetp   (lua_State *L, int index, const void *p);
 void  lua_rawsetp   (lua_State *L, int index, const void *p);

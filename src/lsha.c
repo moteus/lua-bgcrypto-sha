@@ -1,3 +1,9 @@
+// #define SHA_1
+// #define SHA_224 
+// #define SHA_256
+// #define SHA_384
+// #define SHA_512
+
 #define L_SHA_MODE 1
 #include "lsha.inc"
 #undef L_SHA_MODE
@@ -18,7 +24,7 @@
 #include "lsha.inc"
 #undef L_SHA_MODE
 
-INT_RETURN luaopen_bgcrypto_sha(lua_State*L){
+LUTL_EXPORT int luaopen_bgcrypto_sha(lua_State*L){
   lua_newtable(L);
   luaopen_bgcrypto_sha1  (L); lua_setfield(L, -2, "sha1"  );
   luaopen_bgcrypto_sha224(L); lua_setfield(L, -2, "sha224");

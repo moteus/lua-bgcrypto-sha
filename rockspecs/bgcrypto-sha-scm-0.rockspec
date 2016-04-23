@@ -26,9 +26,10 @@ local function make_module()
     result['bgcrypto.' .. name] = {
       sources = {
         'src/l52util.c', 'src/sha/sha1.c', 'src/sha/sha2.c',
-        'src/l' .. name ..'.c'
+        'src/sha/hmac.c', 'src/l' .. name ..'.c'
       },
       incdirs = {'src/sha'},
+      defines = {'RETURN_VALUES', 'VOID_RETURN=void', 'INT_RETURN=int'}
     }
   end
   return result
@@ -38,16 +39,6 @@ build = {
   copy_directories = {"test"},
 
   type = "builtin",
-
-  platforms = {
-    windows = { modules = {
-      ['bgcrypto.sha1'  ] = { defines = {'DLL_EXPORT'} },
-      ['bgcrypto.sha224'] = { defines = {'DLL_EXPORT'} },
-      ['bgcrypto.sha256'] = { defines = {'DLL_EXPORT'} },
-      ['bgcrypto.sha384'] = { defines = {'DLL_EXPORT'} },
-      ['bgcrypto.sha512'] = { defines = {'DLL_EXPORT'} },
-    }},
-  },
 
   modules = make_module();
 }
