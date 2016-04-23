@@ -20,7 +20,9 @@ dependencies = {
 
 local function make_module()
   local result = {}
-  local names = {'sha1','sha224','sha256','sha384','sha512'}
+  local names = {'sha1','sha224','sha256','sha384','sha512',
+    'sha512_128','sha512_192','sha512_224','sha512_256',
+  }
   for i = 1, #names do
     local name = names[i]
     result['bgcrypto.' .. name] = {

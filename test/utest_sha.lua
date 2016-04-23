@@ -10,11 +10,15 @@ local function prequire(name)
 end
 
 local sha = {
-  sha1   = require "bgcrypto.sha1";
-  sha224 = require "bgcrypto.sha224";
-  sha256 = require "bgcrypto.sha256";
-  sha384 = require "bgcrypto.sha384";
-  sha512 = require "bgcrypto.sha512";
+  sha1       = require "bgcrypto.sha1";
+  sha224     = require "bgcrypto.sha224";
+  sha256     = require "bgcrypto.sha256";
+  sha384     = require "bgcrypto.sha384";
+  sha512     = require "bgcrypto.sha512";
+  sha512_224 = require "bgcrypto.sha512_128";
+  sha512_224 = require "bgcrypto.sha512_192";
+  sha512_224 = require "bgcrypto.sha512_224";
+  sha512_256 = require "bgcrypto.sha512_256";
 }
 local pbkdf2     = require  "bgcrypto.pbkdf2"
 local hmac       = require  "bgcrypto.hmac"
@@ -69,6 +73,12 @@ local SHA = {
       ["SHA-256"] = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       ["SHA-384"] = "38b060a751ac96384cd9327eb1b1e36a21fdb71114be07434c0cc7bf63f6e1da274edebfe76f65fbd51ad2f14898b95b",
       ["SHA-512"] = "cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e",
+    }
+  },
+  { msg = "The quick brown fox jumps over the lazy dog", count = 1;
+    {
+      ["SHA-512_256"] = "dd9d67b371519c339ed8dbd25af90e976a1eeefd4ad3d889005e532fc5bef04d",
+      ["SHA-512_224"] = "944cd2847fb54558d4775db0485a50003111c8e5daa63fe722c6aa37",
     }
   },
   { msg = "", count = 10;
@@ -330,11 +340,13 @@ local PBKDF2 = {
 }
 
 local FN = {
-  ["SHA-1"  ]   = {sha.sha1,   new = sha.sha1.new,   digest = sha.sha1.digest,   hmac = sha.sha1.hmac   };
-  ["SHA-224"]   = {sha.sha224, new = sha.sha224.new, digest = sha.sha224.digest, hmac = sha.sha224.hmac };
-  ["SHA-256"]   = {sha.sha256, new = sha.sha256.new, digest = sha.sha256.digest, hmac = sha.sha256.hmac };
-  ["SHA-384"]   = {sha.sha384, new = sha.sha384.new, digest = sha.sha384.digest, hmac = sha.sha384.hmac };
-  ["SHA-512"]   = {sha.sha512, new = sha.sha512.new, digest = sha.sha512.digest, hmac = sha.sha512.hmac };
+  ["SHA-1"  ]     = {sha.sha1,       new = sha.sha1.new,       digest = sha.sha1.digest,       hmac = sha.sha1.hmac       };
+  ["SHA-224"]     = {sha.sha224,     new = sha.sha224.new,     digest = sha.sha224.digest,     hmac = sha.sha224.hmac     };
+  ["SHA-256"]     = {sha.sha256,     new = sha.sha256.new,     digest = sha.sha256.digest,     hmac = sha.sha256.hmac     };
+  ["SHA-384"]     = {sha.sha384,     new = sha.sha384.new,     digest = sha.sha384.digest,     hmac = sha.sha384.hmac     };
+  ["SHA-512"]     = {sha.sha512,     new = sha.sha512.new,     digest = sha.sha512.digest,     hmac = sha.sha512.hmac     };
+  ["SHA-512_224"] = {sha.sha512_224, new = sha.sha512_224.new, digest = sha.sha512_224.digest, hmac = sha.sha512_224.hmac };
+  ["SHA-512_256"] = {sha.sha512_256, new = sha.sha512_256.new, digest = sha.sha512_256.digest, hmac = sha.sha512_256.hmac };
 }
 
 if md5       then FN["MD5"]       = {md5,        new = md5.new,        digest = md5.digest,        hmac = md5.hmac        }; end
@@ -343,11 +355,13 @@ if sha256    then FN["SHA-256(D)"]= {sha256,     new = sha256.new,     digest = 
 if ripemd160 then FN["RIPEMD160"] = {ripemd160,  new = ripemd160.new,  digest = ripemd160.digest,  hmac = ripemd160.hmac  }; end
 
 local SUPPORT_UD = {
-  ["SHA-1"  ]   = true;
-  ["SHA-224"]   = true;
-  ["SHA-256"]   = true;
-  ["SHA-384"]   = true;
-  ["SHA-512"]   = true;
+  ["SHA-1"  ]     = true;
+  ["SHA-224"]     = true;
+  ["SHA-256"]     = true;
+  ["SHA-384"]     = true;
+  ["SHA-512"]     = true;
+  ["SHA-512_224"] = true;
+  ["SHA-512_256"] = true;
 }
 
 for i, test in ipairs(SHA) do 

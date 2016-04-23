@@ -105,6 +105,7 @@ static const char HEX_DIGEST[] = {'0','1','2','3','4','5','6','7','8','9','a','b
 #define CAT5_IMPL(A, B, C, D, E) A ## B ## C ## D ## E
 #define CAT5(A, B, C, D, E) CAT5_IMPL(A, B, C, D, E)
 
+#define SHA_NAME_BASE(P, N) CAT4(P, L_SHA_MODE_BASE, _, N)
 #define SHA_NAME(P, N) CAT4(P, L_SHA_MODE, _, N)
 #define HMAC_NAME(P, N) CAT5(P, _sha, L_SHA_MODE, _, N)
 
@@ -133,7 +134,7 @@ static const char * SHA_NAME(L_SHA, CTX) = L_SHA_NAME;
 
 typedef struct SHA_NAME(l_sha, ctx_tag){
   FLAG_TYPE flags;
-  SHA_NAME(sha, ctx) ctx[1];
+  SHA_NAME_BASE(sha, ctx) ctx[1];
 } SHA_NAME(l_sha,ctx);
 
 static SHA_NAME(l_sha,ctx) *SHA_NAME(l_get_sha,at) (lua_State *L, int i) {
@@ -157,7 +158,7 @@ static int SHA_NAME(l_sha,clone)(lua_State *L){
   SHA_NAME(l_sha,ctx) *dst = lutil_newudatap(L, SHA_NAME(l_sha,ctx), SHA_NAME(L_SHA,CTX));
   memset(dst, 0, sizeof(SHA_NAME(l_sha,ctx)));
 
-  memcpy(dst->ctx, src->ctx, sizeof(SHA_NAME(sha,ctx)));
+  memcpy(dst->ctx, src->ctx, sizeof(SHA_NAME_BASE(sha,ctx)));
 
   return 1;
 }
@@ -210,7 +211,7 @@ static int SHA_NAME(l_sha,reset)(lua_State *L){
 static int SHA_NAME(l_sha,digest)(lua_State *L){
   SHA_NAME(l_sha,ctx) *ctx = SHA_NAME(l_get_sha,at)(L, 1);
   unsigned char buffer[SHA_NAME(SHA,DIGEST_SIZE)];
-  SHA_NAME(sha,ctx) sctx[1];
+  SHA_NAME_BASE(sha,ctx) sctx[1];
 
   { /*last chunk*/
     size_t len; const unsigned char *data = (unsigned char *)opt_correct_range(L, 2, &len);
@@ -220,7 +221,7 @@ static int SHA_NAME(l_sha,digest)(lua_State *L){
     }
   }
 
-  memcpy(&sctx[0], &ctx->ctx[0], sizeof(SHA_NAME(sha,ctx)));
+  memcpy(&sctx[0], &ctx->ctx[0], sizeof(SHA_NAME_BASE(sha,ctx)));
 
   SHA_NAME(sha,end)(buffer, sctx);
 
@@ -234,7 +235,7 @@ static int SHA_NAME(l_sha,digest)(lua_State *L){
 }
 
 static int SHA_NAME(l_sha,hash)(lua_State *L){
-  SHA_NAME(sha,ctx) ctx[1];
+  SHA_NAME_BASE(sha,ctx) ctx[1];
   unsigned char buffer[SHA_NAME(SHA,DIGEST_SIZE)];
   size_t len; const unsigned char *data = (unsigned char *)correct_range(L, 1, &len);
 
@@ -363,7 +364,7 @@ static int HMAC_NAME(l_hmac,reset)(lua_State *L){
     memcpy(ctx->ctx->key, key, sizeof(ctx->ctx->key));
     ctx->ctx->klen = klen;
     if(klen == HMAC_IN_DATA){
-      SHA_NAME(sha, begin)(&ctx->ctx->sha_ctx->CAT2(u_sha, L_SHA_MODE));
+      SHA_NAME(sha,begin)(&ctx->ctx->sha_ctx->CAT2(u_sha, L_SHA_MODE_BASE));
       hmac_sha_data(key, ctx->ctx->input_len, ctx->ctx);
     }
   }
@@ -437,11 +438,15 @@ static const struct luaL_Reg HMAC_NAME(l_hmac, meth)[] = {
 
 #define derive_key      CAT3(pbkdf2, _sha, L_SHA_MODE)
 
-#if L_SHA_MODE != 1
+#if L_SHA_MODE_BASE != 1
 # define HMAC_SHA1 CAT2(HMAC_SHA, L_SHA_MODE)
 #endif
 
 #include "pwd2key.c"
+
+#if L_SHA_MODE_BASE != 1
+# undef HMAC_SHA1
+#endif
 
 static int SHA_NAME(l_sha, pbkdf2)(lua_State *L){
   unsigned char buffer[512];
@@ -472,10 +477,6 @@ static int SHA_NAME(l_sha, pbkdf2)(lua_State *L){
 }
 
 #undef derive_key
-
-#if L_SHA_MODE != 1
-# undef HMAC_SHA1
-#endif
 
 //}
 
@@ -526,6 +527,7 @@ LUTL_EXPORT int CAT2(luaopen_bgcrypto_sha, L_SHA_MODE) (lua_State*L){
 #undef CAT4_IMPL
 #undef CAT5
 #undef CAT5_IMPL
+#undef SHA_NAME_BASE
 #undef SHA_NAME
 #undef QSTR_IMPL
 #undef QSTR

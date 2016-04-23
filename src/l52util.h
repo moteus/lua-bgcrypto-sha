@@ -6,18 +6,26 @@
 
 #ifndef LUTL_EXPORT
 #  ifdef DLL_IMPORT
-#    if defined( _MSC_VER ) || defined ( __INTEL_COMPILER )
-#      define LUTL_EXPORT     __declspec( dllimport )
-#    elif defined( __GNUC__ )
-#      define LUTL_EXPORT     __declspec( __dllimport__ )
+#    ifdef _WIN32
+#      if defined( _MSC_VER ) || defined ( __INTEL_COMPILER )
+#        define LUTL_EXPORT     __declspec( dllimport )
+#      elif defined( __GNUC__ )
+#        define LUTL_EXPORT     __declspec( __dllimport__ )
+#      else
+#         define LUTL_EXPORT
+#      endif
 #    else
-#       define LUTL_EXPORT
+#      define LUTL_EXPORT
 #    endif
 #  else
-#    if defined( _MSC_VER ) || defined ( __INTEL_COMPILER )
-#      define LUTL_EXPORT     __declspec( dllexport )
-#    elif defined( __GNUC__ )
-#      define LUTL_EXPORT     __declspec( __dllexport__ )
+#    ifdef _WIN32
+#      if defined( _MSC_VER ) || defined ( __INTEL_COMPILER )
+#        define LUTL_EXPORT     __declspec( dllexport )
+#      elif defined( __GNUC__ )
+#        define LUTL_EXPORT     __declspec( __dllexport__ )
+#      else
+#         define LUTL_EXPORT
+#      endif
 #    else
 #       define LUTL_EXPORT
 #    endif

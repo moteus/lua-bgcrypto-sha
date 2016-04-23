@@ -11,7 +11,9 @@ DEFINES = L{
 
 
 local SHA = {}
-for _, name in ipairs{'sha1','sha224','sha256','sha384','sha512'} do
+for _, name in ipairs{'sha1','sha224','sha256','sha384','sha512',
+  'sha512_128','sha512_192','sha512_224','sha512_256'}
+do
   local sha = c.shared{name,
     base     = 'src',
     src      = {'sha/*.c', 'l52util.c', 'l' .. name .. '.c'},
