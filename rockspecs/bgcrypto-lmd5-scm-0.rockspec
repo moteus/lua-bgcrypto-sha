@@ -10,7 +10,7 @@ description = {
   summary  = "Wraps digest implementation from `lmd5` library.",
   homepage = "https://github.com/moteus/bgcrypto-sha",
   detailed = [[Provide bgcrypto.digest interface and implement hmac/pbkdf2 functions.]];
-  license = "MIT/X11",
+  license = "BSD",
 }
 
 dependencies = {

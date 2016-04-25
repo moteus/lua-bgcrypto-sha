@@ -10,7 +10,7 @@ description = {
   summary  = "SHA1/SHA2 digest library",
   homepage = "https://github.com/moteus/bgcrypto-sha",
   detailed = [[Binding to Dr Brian Gladman's implementation of SHA/HMAC algorithm.]];
-  -- license = "MIT/X11",
+  license = "BSD",
 }
 
 dependencies = {

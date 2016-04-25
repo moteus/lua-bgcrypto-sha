@@ -10,7 +10,7 @@ description = {
   summary  = "Password-Based Key Derivation Function 2",
   homepage = "https://github.com/moteus/bgcrypto-sha",
   detailed = [[Work with SHA1/SHA2/MD5/RIPEMD160/etc. hash algorithms.]];
-  license = "MIT/X11",
+  license = "BSD",
 }
 
 dependencies = {
