@@ -30,7 +30,7 @@ static int pass(lua_State *L){
 /* return [ buffer[be], buffer[en] ] */
 static const char* correct_range(lua_State *L, int idx, size_t *size){
   if(lua_islightuserdata(L, idx)){
-    /* (ud, [offset=0,] size) */
+    /* (ud, [offset=1,] size) */
     const char *input = (const char*)lua_touserdata(L, idx);
     int of, sz;
 
@@ -41,16 +41,16 @@ static const char* correct_range(lua_State *L, int idx, size_t *size){
       lua_remove(L, idx + 1);
     }
     else{
-      of = 0;
+      of = 1;
       sz = luaL_checkinteger(L, idx + 1);
       lua_remove(L, idx + 1);
     }
 
-    luaL_argcheck(L, of >= 0, idx+1, "invalid offset");
+    luaL_argcheck(L, of >  0, idx+1, "invalid offset");
     luaL_argcheck(L, sz >= 0, idx+2, "invalid size"  );
 
     *size = sz;
-    return input + of;
+    return input + of - 1;
   }
 
   else{

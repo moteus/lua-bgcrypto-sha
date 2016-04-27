@@ -466,12 +466,12 @@ for i, test in ipairs(SHA) do
             d = new()
             d:update(zmsg:pointer(), zmsg:size())
             assert_equal(etalon, STR(d:digest()))
-            d:reset():update(zmsg:pointer(), 0, zmsg:size())
+            d:reset():update(zmsg:pointer(), 1, zmsg:size())
             assert_equal(etalon, STR(d:digest()))
           end)
           TEST(algo, "ud_iter_update", function()
             d = new()
-            for i = 1, zmsg:size() do d:update(zmsg:pointer(), i-1, 1) end
+            for i = 1, zmsg:size() do d:update(zmsg:pointer(), i, 1) end
             assert_equal(etalon, STR(d:digest()))
           end)
         end
@@ -649,7 +649,7 @@ for i, test in ipairs(HMAC) do
             d = new(key)
             d:update(zmsg:pointer(), zmsg:size())
             assert_equal(etalon, STR(d:digest()):sub(1,#etalon))
-            d:reset(key):update(zmsg:pointer(), 0, zmsg:size())
+            d:reset(key):update(zmsg:pointer(), 1, zmsg:size())
             assert_equal(etalon, STR(d:digest()):sub(1,#etalon))
           end)
 
@@ -657,19 +657,19 @@ for i, test in ipairs(HMAC) do
             d = hmac.new(hash, key)
             d:update(zmsg:pointer(), zmsg:size())
             assert_equal(etalon, STR(d:digest()):sub(1,#etalon))
-            d:reset():update(zmsg:pointer(), 0, zmsg:size())
+            d:reset():update(zmsg:pointer(), 1, zmsg:size())
             assert_equal(etalon, STR(d:digest()):sub(1,#etalon))
           end)
 
           TEST(algo, "ud_iter_update", function()
             d = new(key)
-            for i = 1, zmsg:size() do d:update(zmsg:pointer(), i-1, 1) end
+            for i = 1, zmsg:size() do d:update(zmsg:pointer(), i, 1) end
             assert_equal(etalon, STR(d:digest()):sub(1,#etalon))
           end)
 
           TEST(algo, "ud_iter_update_lua_impl", function()
             d = hmac.new(hash, key)
-            for i = 1, zmsg:size() do d:update(zmsg:pointer(), i-1, 1) end
+            for i = 1, zmsg:size() do d:update(zmsg:pointer(), i, 1) end
             assert_equal(etalon, STR(d:digest()):sub(1,#etalon))
           end)
 
